@@ -1,3 +1,5 @@
+const logger = require('../logger/logger');
+
 class DBClient {
     getDoc(model, filter) {
         return new Promise((resolve, reject) => {
@@ -25,6 +27,7 @@ class DBClient {
                 if (err) {
                     reject(err);
                 } else {
+                    logger.info('Image uploaded successfully.');
                     return resolve({
                         status: true,
                         message: `Successfully Uploaded the Image with name : ${data.file_name}.`,

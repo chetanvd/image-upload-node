@@ -1,6 +1,8 @@
 const Validator = require('jsonschema').Validator;
 const fs = require('fs');
 const path = require('path');
+const gm = require('gm');
+const logger = require('../logger/logger');
 
 const validateSchema = (event, schema) => {
     const validator = new Validator();
@@ -32,8 +34,32 @@ function getEpochTime(fromDate, toDate) {
     };
 }
 
+function createImageThumbnail(fileDetails) {
+    return new Promise((resolve, reject) => {
+        gm(fileDetails.file.path)
+            .resize(100, 100)
+            .write(
+                `${fileDetails.file.destination}/${
+                    fileDetails.file.filename.split('.')[0]
+                }_thumbnail.jpg`,
+                function (err) {
+                    if (err) {
+                        logger.error(err + '');
+                        return reject({
+                            error: 'Internal Server Error',
+                            status: STATUS_CODES.internal_server_error,
+                        });
+                    }
+                    logger.info('Created Thumbnail image.');
+                    return resolve('Created Thumbnail image.');
+                }
+            );
+    });
+}
+
 module.exports = {
     validateSchema,
     getImageDir,
     getEpochTime,
+    createImageThumbnail,
 };

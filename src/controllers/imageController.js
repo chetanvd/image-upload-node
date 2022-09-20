@@ -1,38 +1,20 @@
-const gm = require('gm');
-
 const logger = require('../logger/logger');
 const ImageService = require('../services/imageService');
 const { STATUS_CODES } = require('../utils/constants');
-const { getEpochTime } = require('../utils/helper');
+const { getEpochTime, createImageThumbnail } = require('../utils/helper');
 
 const imageService = new ImageService();
 
 class AppsController {
     async upload(req, res, next) {
-        logger.info('Received request to Upload Image');
+        logger.info('Received request to Upload Image.');
         try {
             let final_img_data = {
                 file_name: req.body.file_name,
                 uploaded_time: new Date().getTime(),
             };
 
-            await gm(req.file.path)
-                .thumb(100, 100)
-                .write(
-                    `${req.file.destination}/${
-                        req.file.filename.split('.')[0]
-                    }_thumbnail.jpg`,
-                    function (err) {
-                        if (err) {
-                            console.log(err)
-                            logger.error(err + '');
-                            return next({
-                                error: 'Internal Server Error',
-                                status: STATUS_CODES.internal_server_error,
-                            });
-                        } 
-                    }
-                );
+            await createImageThumbnail(req);
 
             const UploadImageResponse = await imageService.upload(
                 final_img_data
